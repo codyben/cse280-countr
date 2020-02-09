@@ -2,6 +2,7 @@
 
 #include <restinio/all.hpp>
 
+
 template < typename RESP >
 RESP
 init_resp( RESP resp )
@@ -21,12 +22,12 @@ auto create_request_handler()
 	router->http_get(
 		"/",
 		[]( auto req, auto ){
-				init_resp( req->create_response() )
-					.append_header( restinio::http_field::content_type, "text/plain; charset=utf-8" )
-					.set_body( "Hello world!")
+        return req->create_response()
+					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
+					.set_body(restinio::sendfile("../index.html"))
 					.done();
 
-				return restinio::request_accepted();
+				// return restinio::request_accepted();
 		} );
 
 	router->http_get(
