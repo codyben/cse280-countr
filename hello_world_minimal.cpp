@@ -2,6 +2,7 @@
 
 #include <restinio/all.hpp>
 
+using namespace std;
 
 template < typename RESP >
 RESP
@@ -16,10 +17,155 @@ init_resp( RESP resp )
 using router_t = restinio::router::express_router_t<>;
 
 std::map<std::string, std::string> user_map;
+std::map<std::string, std::map<std::string, int>> counter_map;
+
+void gen_random(char *s, const int len) {
+    static const char alphanum[] =
+        "0123456789"
+        "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+        "abcdefghijklmnopqrstuvwxyz";
+
+    for (int i = 0; i < len; ++i) {
+        s[i] = alphanum[rand() % (sizeof(alphanum) - 1)];
+    }
+
+    s[len] = 0;
+}
 
 auto create_request_handler()
 {
 	auto router = std::make_unique< router_t >();
+
+	router->http_get(
+		"/create_counter",
+		[](auto req, auto) {
+			const auto qp = restinio::parse_query( req->header().query() );
+        if (qp.has("username") && qp.has("initial_count")) {
+					std::string username = std::string(qp["username"]);
+					if (user_map.find(username) == user_map.end()) {
+						req->create_response().set_body("User not found").done();
+					} else {
+						std::map<std::string, int> user_counters = counter_map[username];
+						char counter_id[7];
+						gen_random(counter_id, 6);
+						user_counters[std::string(counter_id)] = stoi(string(qp["initial_count"]));
+						counter_map[username] = user_counters;
+						req->create_response().set_body("Created Counter").done();
+						return restinio::request_accepted();
+					}
+				} else {
+					req->create_response().set_body("Undefined username/initial_count").done();
+				}
+				return restinio::request_rejected();
+		}
+	);
+
+	router->http_get(
+		"/get_user_counters",
+		[](auto req, auto) {
+			const auto qp = restinio::parse_query( req->header().query() );
+			if (qp.has("username")) {
+				string username = string(qp["username"]);
+				if (counter_map.find(username) == counter_map.end()) {
+					req->create_response().set_body("User not found in counter_map").done();
+				} else {
+					map<string, int> counters = counter_map[username];
+					stringstream response;
+					response << "{";
+					for (auto const& counter : counters) {
+						response << "\"" << counter.first << "\" : \"" << counter.second << "\",";
+					}
+					response << "}";
+					req->create_response().append_header( restinio::http_field::content_type, "text/json; charset=utf-8" )
+					.set_body(response.str())
+					.done();
+				}
+			} else {
+				req->create_response().set_body("username not set").done();
+			}
+			return restinio::request_rejected();
+		}
+	);
+
+	router->http_get(
+		"/get_count",
+		[](auto req, auto) {
+			const auto qp = restinio::parse_query( req->header().query() );
+			if (qp.has("username") && qp.has("counter_id")) {
+				string username = string(qp["username"]);
+				string counter_id = string(qp["counter_id"]);
+				if (counter_map.find(username) == counter_map.end()) {
+					req->create_response().set_body("User not found in counter_map").done();
+				} else {
+					map<string, int> counters = counter_map[username];
+					if (counters.find(counter_id) == counters.end()) {
+						req->create_response().set_body("Counter not found").done();
+					} else {
+						int count = counters[counter_id];
+						req->create_response().set_body(to_string(count)).done();
+						return restinio::request_accepted();
+					}
+				}
+			} else {
+				req->create_response().set_body("username/counter_id not set").done();
+			}
+			return restinio::request_rejected();
+		}
+	);
+
+	router->http_get(
+		"/increment_count",
+		[](auto req, auto) {
+			const auto qp = restinio::parse_query( req->header().query() );
+			if (qp.has("username") && qp.has("counter_id")) {
+				string username = string(qp["username"]);
+				string counter_id = string(qp["counter_id"]);
+				if (counter_map.find(username) == counter_map.end()) {
+					req->create_response().set_body("User not found in counter_map").done();
+				} else {
+					map<string, int> counters = counter_map[username];
+					if (counters.find(counter_id) == counters.end()) {
+						req->create_response().set_body("Counter not found").done();
+					} else {
+						counters[counter_id] += 1;
+						counter_map[username] = counters;
+						req->create_response().set_body("Incremented").done();
+						return restinio::request_accepted();
+					}
+				}
+			} else {
+				req->create_response().set_body("username/counter_id not set").done();
+			}
+			return restinio::request_rejected();
+		}
+	);
+
+	router->http_get(
+		"/decrement_count",
+		[](auto req, auto) {
+			const auto qp = restinio::parse_query( req->header().query() );
+			if (qp.has("username") && qp.has("counter_id")) {
+				string username = string(qp["username"]);
+				string counter_id = string(qp["counter_id"]);
+				if (counter_map.find(username) == counter_map.end()) {
+					req->create_response().set_body("User not found in counter_map").done();
+				} else {
+					map<string, int> counters = counter_map[username];
+					if (counters.find(counter_id) == counters.end()) {
+						req->create_response().set_body("Counter not found").done();
+					} else {
+						counters[counter_id] -= 1;
+						counter_map[username] = counters;
+						req->create_response().set_body("Decremented").done();
+						return restinio::request_accepted();
+					}
+				}
+			} else {
+				req->create_response().set_body("username/counter_id not set").done();
+			}
+			return restinio::request_rejected();
+		}
+	);
 
 	router->http_get(
 		"/login_user",
@@ -51,9 +197,12 @@ auto create_request_handler()
 			const auto qp = restinio::parse_query( req->header().query() );
 			if (qp.has( "username" ) && qp.has("password")) {
 				// user_map["test"];
-				if (user_map.find(std::string(qp["username"])) == user_map.end()) {
+				std::string username = std::string(qp["username"]);
+				if (user_map.find(username) == user_map.end()) {
 					// User not found
-					user_map[std::string(qp["username"])] = std::string(qp["password"]);
+					user_map[username] = std::string(qp["password"]);
+					std::map<std::string, int> counter;
+					counter_map[username] = counter;
 					req->create_response().set_body("User created").done();
 					return restinio::request_accepted();
 				} else {
