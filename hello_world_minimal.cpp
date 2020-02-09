@@ -15,9 +15,55 @@ init_resp( RESP resp )
 
 using router_t = restinio::router::express_router_t<>;
 
+std::map<std::string, std::string> user_map;
+
 auto create_request_handler()
 {
 	auto router = std::make_unique< router_t >();
+
+	router->http_get(
+		"/login_user",
+		[](auto req, auto) {
+			const auto qp = restinio::parse_query( req->header().query() );
+        if (qp.has( "username" ) && qp.has("password")) {
+					// user_map["test"];
+					if (user_map.find(std::string(qp["username"])) == user_map.end()) {
+						// User not found
+						req->create_response().set_body("User not found").done();
+					} else {
+						if (user_map[std::string(qp["username"])] == std::string(qp["password"])) {
+							req->create_response().set_body("Valid Authentication").done();
+							return restinio::request_accepted();
+						} else {
+							req->create_response().set_body("Invalid Password").done();
+						}
+					}
+				} else {
+					req->create_response().set_body("Undefined username/password").done();
+				}
+				return restinio::request_rejected();
+		}
+	);
+
+	router->http_get(
+		"/register_user",
+		[]( auto req, auto ) {
+			const auto qp = restinio::parse_query( req->header().query() );
+			if (qp.has( "username" ) && qp.has("password")) {
+				// user_map["test"];
+				if (user_map.find(std::string(qp["username"])) == user_map.end()) {
+					// User not found
+					user_map[std::string(qp["username"])] = std::string(qp["password"]);
+					req->create_response().set_body("User created").done();
+					return restinio::request_accepted();
+				} else {
+					req->create_response().set_body("Username taken").done();
+				}
+			} else {
+				req->create_response().set_body("Undefined username/password").done();
+			}
+			return restinio::request_rejected();
+		} );
 
 	router->http_get(
 		"/",
@@ -26,8 +72,6 @@ auto create_request_handler()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
 					.set_body(restinio::sendfile("../index.html"))
 					.done();
-
-				// return restinio::request_accepted();
 		} );
 
 	router->http_get(
