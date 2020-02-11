@@ -200,8 +200,8 @@ auto create_request_handler()
 		[]( auto req, auto ) {
 			std::cout << req->body(); 
 			const auto j3 = json::parse(req->body());
-			std::cout << j3.has("username");
-			if (j3.contains("username")) {
+			// std::cout << j3.has("username");
+			if (j3.contains("username") && js.contains("password")) {
 				// user_map["test"];
 				std::string username = std::string(j3["username"]);
 				if (user_map.find(username) == user_map.end()) {
