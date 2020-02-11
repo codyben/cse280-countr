@@ -33,3 +33,5 @@
 
 # Build subfolder
 build/
+
+CMakeCache.txt
