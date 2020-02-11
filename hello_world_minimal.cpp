@@ -43,16 +43,16 @@ auto create_request_handler()
 	router->http_get(
 		"/create_counter",
 		[](auto req, auto) {
-			const auto qp = restinio::parse_query( req->header().query() );
-        if (qp.has("username") && qp.has("initial_count")) {
-					std::string username = std::string(qp["username"]);
+			const auto j3 = json::parse(req->body());
+        if (j3.contains("username") && j3.contains("initial_count")) {
+					std::string username = std::string(j3["username"]);
 					if (user_map.find(username) == user_map.end()) {
 						req->create_response().set_body("User not found").done();
 					} else {
 						std::map<std::string, int> user_counters = counter_map[username];
 						char counter_id[7];
 						gen_random(counter_id, 6);
-						user_counters[std::string(counter_id)] = stoi(string(qp["initial_count"]));
+						user_counters[std::string(counter_id)] = stoi(string(j3["initial_count"]));
 						counter_map[username] = user_counters;
 						req->create_response().set_body("Created Counter").done();
 						return restinio::request_accepted();
@@ -67,9 +67,9 @@ auto create_request_handler()
 	router->http_get(
 		"/get_user_counters",
 		[](auto req, auto) {
-			const auto qp = restinio::parse_query( req->header().query() );
-			if (qp.has("username")) {
-				string username = string(qp["username"]);
+			const auto j3 = json::parse(req->body());
+			if (j3.contains("username")) {
+				string username = string(j3["username"]);
 				if (counter_map.find(username) == counter_map.end()) {
 					req->create_response().set_body("User not found in counter_map").done();
 				} else {
@@ -120,10 +120,10 @@ auto create_request_handler()
 	router->http_get(
 		"/increment_count",
 		[](auto req, auto) {
-			const auto qp = restinio::parse_query( req->header().query() );
-			if (qp.has("username") && qp.has("counter_id")) {
-				string username = string(qp["username"]);
-				string counter_id = string(qp["counter_id"]);
+			const auto j3 = json::parse(req->body());
+			if (j3.contains("username") && j3.contains("counter_id")) {
+				string username = string(j3["username"]);
+				string counter_id = string(j3["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
 					req->create_response().set_body("User not found in counter_map").done();
 				} else {
@@ -147,10 +147,10 @@ auto create_request_handler()
 	router->http_get(
 		"/decrement_count",
 		[](auto req, auto) {
-			const auto qp = restinio::parse_query( req->header().query() );
-			if (qp.has("username") && qp.has("counter_id")) {
-				string username = string(qp["username"]);
-				string counter_id = string(qp["counter_id"]);
+			const auto j3 = json::parse(req->body());
+			if (j3.contains("username") && j3.contains("counter_id")) {
+				string username = string(j3["username"]);
+				string counter_id = string(j3["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
 					req->create_response().set_body("User not found in counter_map").done();
 				} else {
@@ -174,14 +174,14 @@ auto create_request_handler()
 	router->http_get(
 		"/login_user",
 		[](auto req, auto) {
-			const auto qp = restinio::parse_query( req->header().query() );
-        if (qp.has( "username" ) && qp.has("password")) {
+			const auto j3 = json::parse(req->body());
+        if (j3.contains( "username" ) && j3.contains("password")) {
 					// user_map["test"];
-					if (user_map.find(std::string(qp["username"])) == user_map.end()) {
+					if (user_map.find(std::string(j3["username"])) == user_map.end()) {
 						// User not found
 						req->create_response().set_body("User not found").done();
 					} else {
-						if (user_map[std::string(qp["username"])] == std::string(qp["password"])) {
+						if (user_map[std::string(j3["username"])] == std::string(j3["password"])) {
 							req->create_response().set_body("Valid Authentication").done();
 							return restinio::request_accepted();
 						} else {
@@ -201,7 +201,7 @@ auto create_request_handler()
 			std::cout << req->body(); 
 			const auto j3 = json::parse(req->body());
 			// std::cout << j3.has("username");
-			if (j3.contains("username") && js.contains("password")) {
+			if (j3.contains("username") && j3.contains("password")) {
 				// user_map["test"];
 				std::string username = std::string(j3["username"]);
 				if (user_map.find(username) == user_map.end()) {
