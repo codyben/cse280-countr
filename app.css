@@ -1,0 +1,13 @@
+.main-header {
+    box-shadow: 1px 14px 5px 0px grey;
+    background-color: #FFC107;
+}
+
+#register_modal div{
+    display: flex;
+}
+
+.modal {
+    max-width: 99%;
+    width: auto;
+}

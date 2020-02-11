@@ -2,6 +2,10 @@
 
 #include <restinio/all.hpp>
 
+#include <nlohmann/json.hpp>
+
+// for convenience
+using json = nlohmann::json;
 using namespace std;
 
 template < typename RESP >
@@ -191,16 +195,18 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/register_user",
 		[]( auto req, auto ) {
-			const auto qp = restinio::parse_query( req->header().query() );
-			if (qp.has( "username" ) && qp.has("password")) {
+			std::cout << req->body(); 
+			const auto j3 = json::parse(req->body());
+			std::cout << j3.has("username");
+			if (j3.contains("username")) {
 				// user_map["test"];
-				std::string username = std::string(qp["username"]);
+				std::string username = std::string(j3["username"]);
 				if (user_map.find(username) == user_map.end()) {
 					// User not found
-					user_map[username] = std::string(qp["password"]);
+					user_map[username] = std::string(j3["password"]);
 					std::map<std::string, int> counter;
 					counter_map[username] = counter;
 					req->create_response().set_body("User created").done();
@@ -220,6 +226,24 @@ auto create_request_handler()
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
 					.set_body(restinio::sendfile("../index.html"))
+					.done();
+		} );
+
+		router->http_get(
+		"/app.js",
+		[]( auto req, auto ){
+        return req->create_response()
+					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
+					.set_body(restinio::sendfile("../app.js"))
+					.done();
+		} );
+
+		router->http_get(
+		"/app.css",
+		[]( auto req, auto ){
+        return req->create_response()
+					.append_header( restinio::http_field::content_type, "text/css; charset=utf-8" )
+					.set_body(restinio::sendfile("../app.css"))
 					.done();
 		} );
 
