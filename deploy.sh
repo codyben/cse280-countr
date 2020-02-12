@@ -7,4 +7,4 @@ conan install .. --build=missing
 cmake ..
 cmake --build . --config Release
 # Check the example.
-./bin/hello_world_minimal &
+./bin/hello_world_minimal
