@@ -35,3 +35,6 @@
 build/
 
 CMakeCache.txt
+
+# VS Code
+/.vscode
