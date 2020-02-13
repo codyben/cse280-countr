@@ -13,7 +13,7 @@
 <body>
     <div class="main-header">
         <div class="pure-menu pure-menu-horizontal">
-            <a href="#" class="pure-menu-heading pure-menu-link">countr</a>
+            <a href="#" class="pure-menu-heading pure-menu-link create">countr</a>
             <ul class="pure-menu-list">
                 <li class="pure-menu-item"><a href="#" class="pure-menu-link">Refresh</a></li>
                 <li class="pure-menu-item register"><a class="pure-menu-link" href="#register_modal" rel="modal:open">Register</a></li>
@@ -23,9 +23,7 @@
     </div>
     <div class="main-body">
         <div class="pure-g">
-            <div class="pure-u-1-3 countr"><p>Thirds</p></div>
-            <div class="pure-u-1-3 countr"><p>Thirds</p></div>
-            <div class="pure-u-1-3 countr"><p>Thirds</p></div>
+            
         </div>
     </div>
     <div id="register_modal" class="modal">
@@ -45,12 +43,25 @@
       <div id="login_modal" class="modal">
         <form class="pure-form" action="/login_user" method="post">
             <fieldset>
-                <legend>Register</legend>
+                <legend>Login</legend>
         
                 <input id="login-username" type="text" placeholder="Username">
                 <input id="login-password" type="password" placeholder="Password">
         
                 <button type="submit" class="pure-button pure-button-primary" onclick="login_user()">Sign in</button>
+            </fieldset>
+        </form>
+        <a href="#" rel="modal:close">Close</a>
+      </div>
+
+      <div id="create_counter" class="modal">
+        <form class="pure-form" action="#" method="post">
+            <fieldset>
+                <legend>MAKE ME A COUNTR</legend>
+        
+                <input id="counter-amt" type="number" placeholder="2">
+        
+                <button type="submit" class="pure-button pure-button-primary" onclick="create_counter()">MAKE ME A COUNTR</button>
             </fieldset>
         </form>
         <a href="#" rel="modal:close">Close</a>

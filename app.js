@@ -1,3 +1,13 @@
+function get_tuple(d) {
+    var keys = [];
+    var vals = [];
+    for(var k in d){ 
+        keys.push(k);
+        vals.push(d[k]);
+    }
+    return [keys, vals];
+}
+
 function on_login() {
     var register_a = $(".register a");
     register_a.text("Logout");
@@ -6,11 +16,15 @@ function on_login() {
     login_a.attr("href", "");
     register_a.attr("href", "");
     register_a.attr("onclick", "logout()");
+    var create_a = $(".create");
+    create_a.text("make a countr");
+    create_a.attr("href", "#create_counter");
+    create_a.attr("rel", "modal:open");
 }
 
 function logout() {
-    Cookies.get("username","");
-    Cookies.get("session", "");
+    Cookies.set("username","");
+    Cookies.set("session", "");
     var register_a = $(".register a");
     register_a.text("Register");
     register_a.attr("href", "#register_modal");
@@ -18,6 +32,10 @@ function logout() {
     login_a.text("Login");
     login_a.attr("href", "#login_modal");
     register_a.attr("onclick", "");
+    var create_a = $(".create");
+    create_a.text("countr");
+    create_a.attr("href", "");
+    create_a.attr("rel", "");
 }
 
 function register_user() {
@@ -64,16 +82,25 @@ function login_user() {
 
 function create_counter() {
     event.preventDefault();
-    var username = $("#login-username").val();
-    var password = $("#login-password").val();
-    console.log(username +" "+ password);
+    var username = Cookies.get("username");
+    var session = Cookies.get("session");
+    var amt = $("#counter-amt").val();
+    if(!amt) {
+        amt = 2;
+    }
+
+    // console.log(username +" "+ password);
     $.ajax({
-        type: 'GET',
+        type: 'POST',
         url: "/create_counter",
-        data: JSON.stringify({"username":username, "password":password})
+        data: JSON.stringify({"username":username, "initial_count":amt, "session_key": session})
     }).done(function(data) { 
         data = JSON.parse(data);
-        alert(data);
+        if( "error" in data) {
+            alert(data.error);
+        } else {
+            get_user_counter();
+        }
     });
 }
 
@@ -84,8 +111,8 @@ function increment_counter() {
     console.log(username +" "+ password);
     $.ajax({
         type: 'GET',
-        url: "/increment_counter",
-        data: JSON.stringify({"username":username, "password":password})
+        url: "/increment_count",
+        data: JSON.stringify({"username":username, "counter_id":password})
     }).done(function(data) { 
         data = JSON.parse(data);
         alert(data);
@@ -98,7 +125,7 @@ function decrement_counter() {
     console.log(username +" "+ password);
     $.ajax({
         type: 'GET',
-        url: "/decrement_counter",
+        url: "/decrement_count",
         data: JSON.stringify({"username":username, "password":password})
     }).done(function(data) {
         data = JSON.parse(data); 
@@ -108,16 +135,21 @@ function decrement_counter() {
 
 function get_user_counter() {
     event.preventDefault();
-    var username = $("#get-counter-username").val();
-    console.log(username +" "+ password);
-    $.ajax({
-        type: 'GET',
-        url: "/get_user_counters",
-        data: JSON.stringify({"username":username})
-    }).done(function(data) {
-        data = JSON.parse(data); 
-        alert(data);
-    });
+    var username = Cookies.get("username");
+    if(!username) {
+        alert("Sorry, I can't do that");
+    } else {
+    // console.log(username +" "+ password);
+        $.ajax({
+            type: 'POST',
+            url: "/get_user_counters",
+            data: JSON.stringify({"username":username}),
+            async: false,
+            success: function(data) {
+                console.log(data);
+            }
+        });
+    }
 }
 
 function check_if_we_logged_in_bro() {
@@ -131,6 +163,10 @@ function check_if_we_logged_in_bro() {
 
 function populate_registered_user_data() {
 
+}
+
+function test_me() {
+    alert("find me");
 }
 
 $( document ).ready(function() {
