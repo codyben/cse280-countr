@@ -25,6 +25,7 @@ function on_login() {
     var login_a = $(".login a");
     login_a.text("Hi, "+Cookies.get("username"));
     login_a.attr("href", "");
+    login_a.attr("rel", "");
     register_a.attr("href", "");
     register_a.attr("onclick", "logout()");
     var create_a = $(".create");
@@ -43,6 +44,7 @@ function logout() {
     var login_a = $(".login a");
     login_a.text("Login");
     login_a.attr("href", "#login_modal");
+    login_a.attr("rel", "modal:open");
     register_a.attr("onclick", "");
     var create_a = $(".create");
     create_a.text("countr");
@@ -147,7 +149,7 @@ function decrement_counter() {
 }
 
 function get_user_counter() {
-    event.preventDefault();
+    // event.preventDefault();
     var username = Cookies.get("username");
     if(!username) {
         alert("Sorry, I can't do that");
@@ -187,7 +189,8 @@ function get_user_counter() {
 function check_if_we_logged_in_bro() {
     var c_key = Cookies.get("session");
     var u = Cookies.get("username");
-
+    console.log(c_key);
+    console.log(u);
     if(u && c_key) {
         on_login();
     }
