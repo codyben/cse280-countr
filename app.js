@@ -176,7 +176,7 @@ function get_user_counter() {
                 grid.empty();
                 for (k in keys) {
                     k = keys[k];
-                    var share_str = '<a href="/?id='+k+'&username='+username+'">Share</a>';
+                    var share_str = '<a href="/get_count?id='+k+'&username='+username+'">Share</a>';
                     var html_str = '<div class="pure-u-1-3 countr"><p data-value=\"'+k+'\">'+data[k]+'</p>'+share_str+'</div>';
                     grid.append(html_str);
                 }

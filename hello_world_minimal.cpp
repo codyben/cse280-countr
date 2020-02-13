@@ -128,9 +128,9 @@ auto create_request_handler()
 		"/get_count",
 		[](auto req, auto) {
 			const auto qp = restinio::parse_query( req->header().query() );
-			if (qp.has("username") && qp.has("counter_id")) {
+			if (qp.has("username") && qp.has("id")) {
 				string username = string(qp["username"]);
-				string counter_id = string(qp["counter_id"]);
+				string counter_id = string(qp["id"]);
 				if (counter_map.find(username) == counter_map.end()) {
 					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 				} else {
@@ -139,12 +139,22 @@ auto create_request_handler()
 						req->create_response().set_body(R"-({"error" : "no counter"})-").done();
 					} else {
 						int count = counters[counter_id];
-						req->create_response().set_body(to_string(count)).done();
+						req->create_response()
+						.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
+						.set_body(
+							"<html>\r\n"
+							"  <body>\r\n"
+							"    <p style=\"font-size: 100vh;\">" + to_string(count) + "</p>\r\n"
+							"  </body>\r\n"
+							"</html>\r\n" )
+						.done();
+
+						// req->create_response().set_body(to_string(count)).done();
 						return restinio::request_accepted();
 					}
 				}
 			} else {
-				req->create_response().set_body(R"-({"error" : "failed incrementing counter"})-").done();
+				req->create_response().set_body(R"-({"error" : "no username/counter_id"})-").done();
 			}
 			return restinio::request_rejected();
 		}
