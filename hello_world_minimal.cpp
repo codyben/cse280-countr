@@ -21,6 +21,7 @@ init_resp( RESP resp )
 using router_t = restinio::router::express_router_t<>;
 
 std::map<std::string, std::string> user_map;
+std::map<std::string, std::string> user_keys;
 std::map<std::string, std::map<std::string, int>> counter_map;
 
 void gen_random(char *s, const int len) {
@@ -44,21 +45,22 @@ auto create_request_handler()
 		"/create_counter",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
-        if (j3.contains("username") && j3.contains("initial_count")) {
+        if (j3.contains("username") && j3.contains("initial_count") && j3.contains("session_key")) {
 					std::string username = std::string(j3["username"]);
+					std::string session_key = std::string(j3["session_key"]);
 					if (user_map.find(username) == user_map.end()) {
-						req->create_response().set_body("User not found").done();
+						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 					} else {
 						std::map<std::string, int> user_counters = counter_map[username];
 						char counter_id[7];
 						gen_random(counter_id, 6);
 						user_counters[std::string(counter_id)] = stoi(string(j3["initial_count"]));
 						counter_map[username] = user_counters;
-						req->create_response().set_body("Created Counter").done();
+						req->create_response().set_body(R"-({"status" : "created counter"})-").done();
 						return restinio::request_accepted();
 					}
 				} else {
-					req->create_response().set_body("Undefined username/initial_count").done();
+					req->create_response().set_body(R"-({"error" : "bad count"})-").done();
 				}
 				return restinio::request_rejected();
 		}
@@ -71,7 +73,7 @@ auto create_request_handler()
 			if (j3.contains("username")) {
 				string username = string(j3["username"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body("User not found in counter_map").done();
+					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					stringstream response;
@@ -85,7 +87,7 @@ auto create_request_handler()
 					.done();
 				}
 			} else {
-				req->create_response().set_body("username not set").done();
+				req->create_response().set_body(R"-({"error" : "username not set"})-").done();
 			}
 			return restinio::request_rejected();
 		}
@@ -99,11 +101,11 @@ auto create_request_handler()
 				string username = string(qp["username"]);
 				string counter_id = string(qp["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body("User not found in counter_map").done();
+					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					if (counters.find(counter_id) == counters.end()) {
-						req->create_response().set_body("Counter not found").done();
+						req->create_response().set_body(R"-({"error" : "no counter"})-").done();
 					} else {
 						int count = counters[counter_id];
 						req->create_response().set_body(to_string(count)).done();
@@ -111,7 +113,7 @@ auto create_request_handler()
 					}
 				}
 			} else {
-				req->create_response().set_body("username/counter_id not set").done();
+				req->create_response().set_body(R"-({"error" : "failed incrementing counter"})-").done();
 			}
 			return restinio::request_rejected();
 		}
@@ -125,20 +127,20 @@ auto create_request_handler()
 				string username = string(j3["username"]);
 				string counter_id = string(j3["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body("User not found in counter_map").done();
+					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					if (counters.find(counter_id) == counters.end()) {
-						req->create_response().set_body("Counter not found").done();
+						req->create_response().set_body(R"-({"error" : "no counter"})-").done();
 					} else {
 						counters[counter_id] += 1;
 						counter_map[username] = counters;
-						req->create_response().set_body("Incremented").done();
+						req->create_response().set_body("{'status': 'incremented'}").done();
 						return restinio::request_accepted();
 					}
 				}
 			} else {
-				req->create_response().set_body("username/counter_id not set").done();
+				req->create_response().set_body(R"-({"error" : "failed incrementing counter"})-").done();
 			}
 			return restinio::request_rejected();
 		}
@@ -152,44 +154,50 @@ auto create_request_handler()
 				string username = string(j3["username"]);
 				string counter_id = string(j3["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body("User not found in counter_map").done();
+					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					if (counters.find(counter_id) == counters.end()) {
-						req->create_response().set_body("Counter not found").done();
+						req->create_response().set_body(R"-({"error" : "no counter"})-").done();
 					} else {
 						counters[counter_id] -= 1;
 						counter_map[username] = counters;
-						req->create_response().set_body("Decremented").done();
+						req->create_response().set_body(R"-({"status" : "decremented"})-").done();
 						return restinio::request_accepted();
 					}
 				}
 			} else {
-				req->create_response().set_body("username/counter_id not set").done();
+				req->create_response().set_body(R"-({"error" : "can't find user / counter"})-").done();
 			}
 			return restinio::request_rejected();
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/login_user",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
         if (j3.contains( "username" ) && j3.contains("password")) {
 					// user_map["test"];
-					if (user_map.find(std::string(j3["username"])) == user_map.end()) {
+					string username = std::string(j3["username"]);
+					if (user_map.find(username) == user_map.end()) {
 						// User not found
-						req->create_response().set_body("User not found").done();
+						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 					} else {
 						if (user_map[std::string(j3["username"])] == std::string(j3["password"])) {
-							req->create_response().set_body("Valid Authentication").done();
+							char rand[13];
+							gen_random(rand, 13);
+							std::string cpp_rand = std::string(rand);
+							req->create_response().set_body("{\"key\":\""+cpp_rand+"\", \"username\":\""+username+"\"}").done();
+							// req->create_response().set_body("{\"key\":\""+cpp_rand+"\", "\"username\":\""+username+"\"}").done();
+							user_keys[cpp_rand] = username;
 							return restinio::request_accepted();
 						} else {
-							req->create_response().set_body("Invalid Password").done();
+							req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 						}
 					}
 				} else {
-					req->create_response().set_body("Undefined username/password").done();
+					req->create_response().set_body(R"-({"error" : "bad input"})-").done();
 				}
 				return restinio::request_rejected();
 		}
@@ -209,13 +217,19 @@ auto create_request_handler()
 					user_map[username] = std::string(j3["password"]);
 					std::map<std::string, int> counter;
 					counter_map[username] = counter;
-					req->create_response().set_body("User created").done();
+					// req->create_response().set_body("User created").done();
+					char rand[13];
+					gen_random(rand, 13);
+					string cpp_rand = std::string(rand);
+
+					user_keys[cpp_rand] = username;
+					req->create_response().set_body("{\"key\":\""+cpp_rand+"\", \"username\":\""+username+"\"}").done();
 					return restinio::request_accepted();
 				} else {
-					req->create_response().set_body("Username taken").done();
+					req->create_response().set_body(R"-({"error" : "bad input"})-").done();
 				}
 			} else {
-				req->create_response().set_body("Undefined username/password").done();
+				req->create_response().set_body(R"-({"error" : "bad input"})-").done();
 			}
 			return restinio::request_rejected();
 		} );
@@ -225,7 +239,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
-					.set_body(restinio::sendfile("../index.html"))
+					.set_body(restinio::sendfile("index.html"))
 					.done();
 		} );
 
@@ -234,7 +248,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
-					.set_body(restinio::sendfile("../app.js"))
+					.set_body(restinio::sendfile("app.js"))
 					.done();
 		} );
 
@@ -243,7 +257,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/css; charset=utf-8" )
-					.set_body(restinio::sendfile("../app.css"))
+					.set_body(restinio::sendfile("app.css"))
 					.done();
 		} );
 
