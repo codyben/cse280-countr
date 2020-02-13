@@ -66,7 +66,7 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/remove_counter",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
@@ -94,7 +94,7 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/get_user_counters",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
@@ -121,7 +121,7 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/get_count",
 		[](auto req, auto) {
 			const auto qp = restinio::parse_query( req->header().query() );
@@ -147,7 +147,7 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/increment_count",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
@@ -174,7 +174,7 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_get(
+	router->http_post(
 		"/decrement_count",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
