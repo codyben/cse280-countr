@@ -41,7 +41,7 @@ auto create_request_handler()
 {
 	auto router = std::make_unique< router_t >();
 
-	router->http_get(
+	router->http_post(
 		"/create_counter",
 		[](auto req, auto) {
 			const auto j3 = json::parse(req->body());
@@ -58,6 +58,34 @@ auto create_request_handler()
 						counter_map[username] = user_counters;
 						req->create_response().set_body(R"-({"status" : "created counter"})-").done();
 						return restinio::request_accepted();
+					}
+				} else {
+					req->create_response().set_body(R"-({"error" : "bad count"})-").done();
+				}
+				return restinio::request_rejected();
+		}
+	);
+
+	router->http_get(
+		"/remove_counter",
+		[](auto req, auto) {
+			const auto j3 = json::parse(req->body());
+        if (j3.contains("username") && j3.contains("session_key") && j3.contains("counter_id")) {
+					string username = string(j3["username"]);
+					string counter_id = string(j3["counter_id"]);
+					string session_key = string(j3["session_key"]);
+					if (user_map.find(username) == user_map.end()) {
+						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+					} else {
+						map<string, int> user_counters = counter_map[username];
+						if (user_counters.find(counter_id) == user_counters.end()) {
+							req->create_response().set_body(R"-({"error" : "can't find counter"})-").done();
+						} else {
+							user_counters.erase(counter_id);
+							counter_map[username] = user_counters;
+							req->create_response().set_body(R"-({"status" : "counter removed"})-").done();
+							return restinio::request_accepted();
+						}
 					}
 				} else {
 					req->create_response().set_body(R"-({"error" : "bad count"})-").done();
