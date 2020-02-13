@@ -143,8 +143,10 @@ auto create_request_handler()
 						.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
 						.set_body(
 							"<html>\r\n"
-							"  <body>\r\n"
-							"    <p style=\"font-size: 100vh;\">" + to_string(count) + "</p>\r\n"
+							"  <body style=\"overflow-y: hidden;\">\r\n"
+							"    <marquee>"
+							"    	<p style=\"font-size: 100vh;margin:0;\">" + to_string(count) + "</p>\r\n"
+							"    </marquee>"
 							"  </body>\r\n"
 							"</html>\r\n" )
 						.done();
