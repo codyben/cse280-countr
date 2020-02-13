@@ -110,9 +110,12 @@ auto create_request_handler()
 						response << "\"" << counter.first << "\" : \"" << counter.second << "\",";
 					}
 					response << "}";
+					string out = response.str();
+					out.erase(out.size() - 2, 1);
 					req->create_response().append_header( restinio::http_field::content_type, "text/json; charset=utf-8" )
-					.set_body(response.str())
+					.set_body(out)
 					.done();
+					return restinio::request_accepted();
 				}
 			} else {
 				req->create_response().set_body(R"-({"error" : "username not set"})-").done();
