@@ -124,7 +124,7 @@ auto create_request_handler()
 		}
 	);
 
-	router->http_post(
+	router->http_get(
 		"/get_count",
 		[](auto req, auto) {
 			const auto qp = restinio::parse_query( req->header().query() );

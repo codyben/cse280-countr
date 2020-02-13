@@ -15,7 +15,7 @@
         <div class="pure-menu pure-menu-horizontal">
             <a href="#" class="pure-menu-heading pure-menu-link create">countr</a>
             <ul class="pure-menu-list">
-                <li class="pure-menu-item"><a href="#" class="pure-menu-link">Refresh</a></li>
+                <li class="pure-menu-item"><a href="#" class="pure-menu-link" onclick="refresh()">Refresh</a></li>
                 <li class="pure-menu-item register"><a class="pure-menu-link" href="#register_modal" rel="modal:open">Register</a></li>
                 <li class="pure-menu-item login"><a class="pure-menu-link" href="#login_modal" rel="modal:open">Login</a></li>
             </ul>
@@ -37,7 +37,7 @@
                 <button type="submit" class="pure-button pure-button-primary" onclick="register_user()">Sign in</button>
             </fieldset>
         </form>
-        <a href="#" rel="modal:close">Close</a>
+        <a class="close_me" href="#" rel="modal:close">Close</a>
       </div>
 
       <div id="login_modal" class="modal">
@@ -51,7 +51,7 @@
                 <button type="submit" class="pure-button pure-button-primary" onclick="login_user()">Sign in</button>
             </fieldset>
         </form>
-        <a href="#" rel="modal:close">Close</a>
+        <a class="close_me" href="#" rel="modal:close">Close</a>
       </div>
 
       <div id="create_counter" class="modal">
@@ -64,7 +64,7 @@
                 <button type="submit" class="pure-button pure-button-primary" onclick="create_counter()">MAKE ME A COUNTR</button>
             </fieldset>
         </form>
-        <a href="#" rel="modal:close">Close</a>
+        <a class="close_me" href="#" rel="modal:close">Close</a>
       </div>
 </body>
 </html>

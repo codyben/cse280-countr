@@ -11,3 +11,12 @@
     max-width: 99%;
     width: auto;
 }
+
+.countr p{
+    /* padding: 5px; */
+    font-size: 28px;
+}
+
+.pure-g {
+    padding: 10px;
+}

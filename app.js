@@ -8,7 +8,18 @@ function get_tuple(d) {
     return [keys, vals];
 }
 
+function close_all_modals() {
+    $(".close_me").click();
+}
+
+function refresh() {
+    $(".pure-g").empty();
+    get_user_counter();
+}
+
 function on_login() {
+    refresh();
+    close_all_modals();
     var register_a = $(".register a");
     register_a.text("Logout");
     var login_a = $(".login a");
@@ -23,6 +34,7 @@ function on_login() {
 }
 
 function logout() {
+    $(".pure-g").empty();
     Cookies.set("username","");
     Cookies.set("session", "");
     var register_a = $(".register a");
@@ -36,6 +48,7 @@ function logout() {
     create_a.text("countr");
     create_a.attr("href", "");
     create_a.attr("rel", "");
+    close_all_modals();
 }
 
 function register_user() {
@@ -144,9 +157,28 @@ function get_user_counter() {
             type: 'POST',
             url: "/get_user_counters",
             data: JSON.stringify({"username":username}),
-            async: false,
-            success: function(data) {
-                console.log(data);
+
+        }).done(function(data){
+            console.log(data);
+            // data = JSON.parse(data); 
+            if ("error" in data) {
+                alert(data.error);
+            } else {
+                // console.log("here");
+                var tuple = get_tuple(data);
+                var keys = tuple[0];
+                var vals = tuple[1];
+                console.log(keys);
+                console.log(vals);
+                var grid = $(".pure-g");
+                grid.empty();
+                for (k in keys) {
+                    k = keys[k];
+                    var share_str = '<a href="/?id='+k+'&username='+username+'">Share</a>';
+                    var html_str = '<div class="pure-u-1-3 countr"><p data-value=\"'+k+'\">'+data[k]+'</p>'+share_str+'</div>';
+                    grid.append(html_str);
+                }
+                close_all_modals();
             }
         });
     }
