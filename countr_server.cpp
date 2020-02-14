@@ -51,7 +51,7 @@ auto create_request_handler()
 					std::string username = std::string(j3["username"]);
 					std::string session_key = std::string(j3["session_key"]);
 					if (user_map.find(username) == user_map.end()) {
-						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+						req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 					} else {
 						std::map<std::string, int> user_counters = counter_map[username];
 						char counter_id[7];
@@ -77,11 +77,11 @@ auto create_request_handler()
 					string counter_id = string(j3["counter_id"]);
 					string session_key = string(j3["session_key"]);
 					if (user_map.find(username) == user_map.end()) {
-						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+						req->create_response().set_body(R"-({"error" : "cannot find user"})-").done();
 					} else {
 						map<string, int> user_counters = counter_map[username];
 						if (user_counters.find(counter_id) == user_counters.end()) {
-							req->create_response().set_body(R"-({"error" : "can't find counter"})-").done();
+							req->create_response().set_body(R"-({"error" : "cannot find counter"})-").done();
 						} else {
 							user_counters.erase(counter_id);
 							counter_map[username] = user_counters;
@@ -103,7 +103,7 @@ auto create_request_handler()
 			if (j3.contains("username")) {
 				string username = string(j3["username"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+					req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					stringstream response;
@@ -134,7 +134,7 @@ auto create_request_handler()
 				string username = string(qp["username"]);
 				string counter_id = string(qp["id"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+					req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					if (counters.find(counter_id) == counters.end()) {
@@ -172,7 +172,7 @@ auto create_request_handler()
 				string username = string(j3["username"]);
 				string counter_id = string(j3["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+					req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					if (counters.find(counter_id) == counters.end()) {
@@ -199,7 +199,7 @@ auto create_request_handler()
 				string username = string(j3["username"]);
 				string counter_id = string(j3["counter_id"]);
 				if (counter_map.find(username) == counter_map.end()) {
-					req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+					req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 				} else {
 					map<string, int> counters = counter_map[username];
 					if (counters.find(counter_id) == counters.end()) {
@@ -212,7 +212,7 @@ auto create_request_handler()
 					}
 				}
 			} else {
-				req->create_response().set_body(R"-({"error" : "can't find user / counter"})-").done();
+				req->create_response().set_body(R"-({"error" : "can\'t find user / counter"})-").done();
 			}
 			return restinio::request_rejected();
 		}
@@ -227,7 +227,7 @@ auto create_request_handler()
 					string username = std::string(j3["username"]);
 					if (user_map.find(username) == user_map.end()) {
 						// User not found
-						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+						req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 					} else {
 						string pswd = std::string(j3["password"]);
 						string username = std::string(j3["username"]);
@@ -242,7 +242,7 @@ auto create_request_handler()
 							user_keys[cpp_rand] = username;
 							return restinio::request_accepted();
 						} else {
-							req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
+							req->create_response().set_body(R"-({"error" : "can\'t find user"})-").done();
 						}
 					}
 				} else {
@@ -314,6 +314,15 @@ auto create_request_handler()
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/css; charset=utf-8" )
 					.set_body(restinio::sendfile("../app.css"))
+					.done();
+		} );
+
+		router->http_get(
+		"/logo.png",
+		[]( auto req, auto ){
+        return req->create_response()
+					.append_header( restinio::http_field::content_type, "text/css; charset=utf-8" )
+					.set_body(restinio::sendfile("../logo.png"))
 					.done();
 		} );
 

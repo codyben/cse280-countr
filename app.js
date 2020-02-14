@@ -84,8 +84,11 @@ function login_user() {
         url: "/login_user",
         data: JSON.stringify({"username":username, "password":password})
     }).done(function(data) { 
-        data = JSON.parse(data);
-        if("error" in data) {
+        if(typeof data == "string") {
+            // data = JSON.parse(data);
+            alert("An error occurred");
+        } else if("error" in data) {
+            data = JSON.parse(data);
             alert(data.error);
         } else {
             Cookies.set("session", data.key);
@@ -115,6 +118,27 @@ function create_counter() {
             alert(data.error);
         } else {
             get_user_counter();
+        }
+    });
+}
+
+function remove_counter(t) {
+    event.preventDefault();
+    var username = Cookies.get("username");
+    var session = Cookies.get("session");
+    var cid = $(t).data("value");
+
+    // console.log(username +" "+ password);
+    $.ajax({
+        type: 'POST',
+        url: "/remove_counter",
+        data: JSON.stringify({"username":username, "counter_id":cid, "session_key": session})
+    }).done(function(data) { 
+        data = JSON.parse(data);
+        if( "error" in data) {
+            alert(data.error);
+        } else {
+            refresh();
         }
     });
 }
@@ -170,8 +194,9 @@ function get_user_counter() {
         }).done(function(data){
             console.log(data);
             // data = JSON.parse(data); 
-            if ("error" in data) {
-                alert(data.error);
+            if (typeof data == "string") {
+                logout();
+                alert("An error occurred");
             } else {
                 // console.log("here");
                 var tuple = get_tuple(data);
@@ -184,10 +209,11 @@ function get_user_counter() {
                 for (k in keys) {
                     k = keys[k];
                     var share_str = '<a target="_blank" href="/get_count?id='+k+'&username='+username+'">Share</a>';
+                    var del_str = '<a onclick="remove_counter(this)" href="#" class="del" data-value="'+k+'">Delete</a>';
                     var inc = '<a onclick="increment_counter(this)" href="#" class="inc" data-value="'+k+'">Upvote</a>';
                     var dec = '<a onclick="decrement_counter(this)" href="#" class="dec" data-value="'+k+'">Downvote</a>';
                     var action_container = '<div class="action_container">'+inc+dec+'</div>';
-                    var html_str = '<div class="pure-u-1-3 countr"><p data-value=\"'+k+'\">'+data[k]+'</p>'+share_str+action_container+'</div>';
+                    var html_str = '<div class="pure-u-1-3 countr"><p data-value=\"'+k+'\">'+data[k]+'</p>'+share_str+action_container+del_str+'</div>';
                     grid.append(html_str);
                 }
                 close_all_modals();

@@ -1,7 +1,10 @@
 body {
 	padding:;
 	background-color: saddlebrown;
-	color: white;
+
+    background-image: url(logo.png);
+    background-size: cover;
+    /*background-image: url("logo.png") repeat;*/
 }
 
 .main-header {
@@ -31,7 +34,7 @@ body {
 }
 
 .pure-g {
-    padding: px;
+    padding: 10px;
 }
 
 .action_container {
