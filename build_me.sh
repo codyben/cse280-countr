@@ -1,2 +1,2 @@
 #!/bin/bash
-cmake build/ && cmake --build build/ --config Release && ./build/bin/server
+mkdir -p build/ && cd build && conan install .. --build=missing && cmake .. && cmake --build . --config Release && ./bin/hello_world_minimal
