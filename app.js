@@ -119,32 +119,39 @@ function create_counter() {
     });
 }
 
-function increment_counter() {
-    event.preventDefault();
-    var username = $("#login-username").val();
-    var password = $("#login-password").val();
-    console.log(username +" "+ password);
+function increment_counter(t) {
+    t = $(t);
+    var cid = t.data("value");
+    var username = Cookies.get("username");
     $.ajax({
-        type: 'GET',
+        type: 'POST',
         url: "/increment_count",
-        data: JSON.stringify({"username":username, "counter_id":password})
+        data: JSON.stringify({"username":username, "counter_id":cid})
     }).done(function(data) { 
         data = JSON.parse(data);
-        alert(data);
+        if("error" in data) {
+            alert(data.error);
+        } else {
+            refresh();
+        }
     });
 }
 
-function decrement_counter() {
-    event.preventDefault();
-    
-    console.log(username +" "+ password);
+function decrement_counter(t) {
+    t = $(t);
+    var cid = t.data("value");
+    var username = Cookies.get("username");
     $.ajax({
-        type: 'GET',
+        type: 'POST',
         url: "/decrement_count",
-        data: JSON.stringify({"username":username, "password":password})
+        data: JSON.stringify({"username":username, "counter_id":cid})
     }).done(function(data) {
         data = JSON.parse(data); 
-        console.log(data);
+        if("error" in data) {
+            alert(data.error);
+        } else {
+            refresh();
+        }
     });
 }
 
@@ -177,7 +184,10 @@ function get_user_counter() {
                 for (k in keys) {
                     k = keys[k];
                     var share_str = '<a target="_blank" href="/get_count?id='+k+'&username='+username+'">Share</a>';
-                    var html_str = '<div class="pure-u-1-3 countr"><p data-value=\"'+k+'\">'+data[k]+'</p>'+share_str+'</div>';
+                    var inc = '<a onclick="increment_counter(this)" href="#" class="inc" data-value="'+k+'">Upvote</a>';
+                    var dec = '<a onclick="decrement_counter(this)" href="#" class="dec" data-value="'+k+'">Downvote</a>';
+                    var action_container = '<div class="action_container">'+inc+dec+'</div>';
+                    var html_str = '<div class="pure-u-1-3 countr"><p data-value=\"'+k+'\">'+data[k]+'</p>'+share_str+action_container+'</div>';
                     grid.append(html_str);
                 }
                 close_all_modals();
