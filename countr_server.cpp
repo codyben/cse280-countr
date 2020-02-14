@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 
 #include <restinio/all.hpp>
 
@@ -20,9 +21,10 @@ init_resp( RESP resp )
 
 using router_t = restinio::router::express_router_t<>;
 
-std::map<std::string, std::string> user_map;
+std::map<std::string, std::size_t> user_map;
 std::map<std::string, std::string> user_keys;
 std::map<std::string, std::map<std::string, int>> counter_map;
+std::map<std::string, std::string> user_salts;
 
 void gen_random(char *s, const int len) {
     static const char alphanum[] =
@@ -178,7 +180,7 @@ auto create_request_handler()
 					} else {
 						counters[counter_id] += 1;
 						counter_map[username] = counters;
-						req->create_response().set_body("{'status': 'incremented'}").done();
+						req->create_response().set_body(R"-({"status" : "incremented"})-").done();
 						return restinio::request_accepted();
 					}
 				}
@@ -227,7 +229,11 @@ auto create_request_handler()
 						// User not found
 						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 					} else {
-						if (user_map[std::string(j3["username"])] == std::string(j3["password"])) {
+						string pswd = std::string(j3["password"]);
+						string username = std::string(j3["username"]);
+						pswd.append(user_salts[username]);
+						std::size_t hashed = std::hash<std::string>{}(pswd);
+						if (user_map[username] == hashed) {
 							char rand[13];
 							gen_random(rand, 13);
 							std::string cpp_rand = std::string(rand);
@@ -256,8 +262,15 @@ auto create_request_handler()
 				// user_map["test"];
 				std::string username = std::string(j3["username"]);
 				if (user_map.find(username) == user_map.end()) {
+					char salt[32];
+					gen_random(salt, 32);
+					user_salts[username] = std::string(salt);
 					// User not found
-					user_map[username] = std::string(j3["password"]);
+					string saltyPswd;
+					saltyPswd.append(std::string(j3["password"]));
+					saltyPswd.append(user_salts[username]);
+					std::size_t hashed = std::hash<std::string>{}(saltyPswd);
+					user_map[username] = hashed;
 					std::map<std::string, int> counter;
 					counter_map[username] = counter;
 					// req->create_response().set_body("User created").done();
@@ -282,7 +295,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
-					.set_body(restinio::sendfile("index.html"))
+					.set_body(restinio::sendfile("../index.html"))
 					.done();
 		} );
 
@@ -291,7 +304,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
-					.set_body(restinio::sendfile("app.js"))
+					.set_body(restinio::sendfile("../app.js"))
 					.done();
 		} );
 
@@ -300,7 +313,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/css; charset=utf-8" )
-					.set_body(restinio::sendfile("app.css"))
+					.set_body(restinio::sendfile("../app.css"))
 					.done();
 		} );
 
