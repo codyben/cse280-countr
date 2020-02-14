@@ -1,4 +1,5 @@
 #include <iostream>
+#include <unordered_map>
 
 #include <restinio/all.hpp>
 
@@ -20,7 +21,7 @@ init_resp( RESP resp )
 
 using router_t = restinio::router::express_router_t<>;
 
-std::map<std::string, std::string> user_map;
+std::map<std::string, std::size_t> user_map;
 std::map<std::string, std::string> user_keys;
 std::map<std::string, std::map<std::string, int>> counter_map;
 std::map<std::string, std::string> user_salts;
@@ -228,12 +229,11 @@ auto create_request_handler()
 						// User not found
 						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 					} else {
-						hash<string> hasher;
 						string pswd = std::string(j3["password"]);
 						string username = std::string(j3["username"]);
 						pswd.append(user_salts[username]);
-						hasher(pswd);
-						if (user_map[username] == pswd) {
+						std::size_t hashed = std::hash<std::string>{}(pswd);
+						if (user_map[username] == hashed) {
 							char rand[13];
 							gen_random(rand, 13);
 							std::string cpp_rand = std::string(rand);
@@ -269,8 +269,8 @@ auto create_request_handler()
 					string saltyPswd;
 					saltyPswd.append(std::string(j3["password"]))
 					saltyPswd.append(user_salts[username]);
-					hash<string> hasher;
-					user_map[username] = hasher(saltyPswd);
+					std::size_t hashed = std::hash<std::string>{}(saltyPswd);
+					user_map[username] = hashed;
 					std::map<std::string, int> counter;
 					counter_map[username] = counter;
 					// req->create_response().set_body("User created").done();
