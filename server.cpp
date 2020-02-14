@@ -23,6 +23,7 @@ using router_t = restinio::router::express_router_t<>;
 std::map<std::string, std::string> user_map;
 std::map<std::string, std::string> user_keys;
 std::map<std::string, std::map<std::string, int>> counter_map;
+std::map<std::string, std::string> user_salts;
 
 void gen_random(char *s, const int len) {
     static const char alphanum[] =
@@ -227,7 +228,12 @@ auto create_request_handler()
 						// User not found
 						req->create_response().set_body(R"-({"error" : "can't find user"})-").done();
 					} else {
-						if (user_map[std::string(j3["username"])] == std::string(j3["password"])) {
+						hash<string> hasher;
+						string pswd = std::string(j3["password"]);
+						string username = std::string(j3["username"]);
+						pswd.append(user_salts[username]);
+						hasher(pswd);
+						if (user_map[username] == pswd) {
 							char rand[13];
 							gen_random(rand, 13);
 							std::string cpp_rand = std::string(rand);
@@ -256,8 +262,15 @@ auto create_request_handler()
 				// user_map["test"];
 				std::string username = std::string(j3["username"]);
 				if (user_map.find(username) == user_map.end()) {
+					char salt[32];
+					gen_random(salt, 32);
+					user_salts[username] = std::string(salt);
 					// User not found
-					user_map[username] = std::string(j3["password"]);
+					string saltyPswd;
+					saltyPswd.append(std::string(j3["password"]))
+					saltyPswd.append(user_salts[username]);
+					hash<string> hasher;
+					user_map[username] = hasher(saltyPswd);
 					std::map<std::string, int> counter;
 					counter_map[username] = counter;
 					// req->create_response().set_body("User created").done();
