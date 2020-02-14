@@ -12,13 +12,13 @@ RUN pip3 install conan && \
     conan remote add stiffstream https://api.bintray.com/conan/stiffstream/public && \
     conan remote add public-conan https://api.bintray.com/conan/bincrafters/public-conan
 
-RUN mkdir restinio-conan-example
-COPY *.cpp restinio-conan-example/
-COPY conanfile.txt restinio-conan-example
-COPY CMakeLists.txt restinio-conan-example
+RUN mkdir cse280-countr
+COPY *.cpp cse280-countr
+COPY conanfile.txt cse280-countr
+COPY CMakeLists.txt cse280-countr
 
 RUN echo "*** Building an example ***" \
-	&& cd restinio-conan-example \
+	&& cd cse280-countr \
 	&& mkdir build \
 	&& cd build \
 	&& conan install -o restinio:boost_libs=$boost_libs --build=missing ..  \
@@ -27,7 +27,7 @@ RUN echo "*** Building an example ***" \
 
 EXPOSE 8080
 
-WORKDIR /restinio-conan-example/build/bin
+WORKDIR /cse280-countr/build/bin
 
-CMD ./hello_world_minimal
+CMD ./countr_server
 
