@@ -267,7 +267,7 @@ auto create_request_handler()
 					user_salts[username] = std::string(salt);
 					// User not found
 					string saltyPswd;
-					saltyPswd.append(std::string(j3["password"]))
+					saltyPswd.append(std::string(j3["password"]));
 					saltyPswd.append(user_salts[username]);
 					std::size_t hashed = std::hash<std::string>{}(saltyPswd);
 					user_map[username] = hashed;
@@ -295,7 +295,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
-					.set_body(restinio::sendfile("index.html"))
+					.set_body(restinio::sendfile("../index.html"))
 					.done();
 		} );
 
@@ -304,7 +304,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/html; charset=utf-8" )
-					.set_body(restinio::sendfile("app.js"))
+					.set_body(restinio::sendfile("../app.js"))
 					.done();
 		} );
 
@@ -313,7 +313,7 @@ auto create_request_handler()
 		[]( auto req, auto ){
         return req->create_response()
 					.append_header( restinio::http_field::content_type, "text/css; charset=utf-8" )
-					.set_body(restinio::sendfile("app.css"))
+					.set_body(restinio::sendfile("../app.css"))
 					.done();
 		} );
 
