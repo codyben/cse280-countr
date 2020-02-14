@@ -8,6 +8,12 @@ body {
 	font-family: "Arial";
 }
 
+.logo {
+	align-self: right;
+	padding: 5px;
+	padding-bottom: 0;
+}
+
 #register_modal div{
     display: flex;
 }
