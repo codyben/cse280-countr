@@ -1,6 +1,11 @@
+body {
+	background-color: saddlebrown
+}
+
 .main-header {
-    box-shadow: 1px 14px 5px 0px grey;
+    box-shadow: 1px 5px 5px 0px white;
     background-color: #FFC107;
+	font-family: "Arial";
 }
 
 #register_modal div{
@@ -18,7 +23,7 @@
 }
 
 .pure-g {
-    padding: 10px;
+    padding: px;
 }
 
 .action_container {
